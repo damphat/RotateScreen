@@ -2,9 +2,12 @@
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-// https://stackoverflow.com/a/27309185/813080
 
-public sealed class KeyboardHook : IDisposable
+namespace Native
+{
+    // https://stackoverflow.com/a/27309185/813080
+
+    public sealed class KeyboardHook : IDisposable
 {
     // Registers a hot key with Windows.
     [DllImport("user32.dll")]
@@ -144,4 +147,5 @@ public enum ModifierKeys : uint
     Control = 2,
     Shift = 4,
     Win = 8
+}
 }

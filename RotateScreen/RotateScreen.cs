@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Native;
+using System;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace RotateScreen
 {
     public partial class RotateScreenForm : Form
     {
+        public static String appName = "RotateScreen";
         KeyboardHook hook = new KeyboardHook();
 
         private bool hidden = false;
@@ -20,22 +16,57 @@ namespace RotateScreen
         {
             InitializeComponent();
 
+            rotate0ToolStripMenuItem.Click += delegate(object sender, EventArgs args) {
+                Display.Rotate(1, Display.Orientations.DEGREES_CW_0);
+            };
+
+            rotate90ToolStripMenuItem.Click += delegate (object sender, EventArgs args) {
+                Display.Rotate(1, Display.Orientations.DEGREES_CW_90);
+            };
+
+
+            rotate180ToolStripMenuItem.Click += delegate (object sender, EventArgs args) {
+                Display.Rotate(1, Display.Orientations.DEGREES_CW_180);
+            };
+
+            rotate270ToolStripMenuItem.Click += delegate (object sender, EventArgs args) {
+                Display.Rotate(1, Display.Orientations.DEGREES_CW_270);
+            };
+
+
+            runAtStartupToolStripMenuItem.Click += delegate (object sender, EventArgs e)
+            {
+                if(AutoRun.IsStartup(appName))
+                {
+                    AutoRun.RemoveStartup(appName);
+                } else
+                {
+                    AutoRun.AddStartup(appName, Application.ExecutablePath);
+                }
+            };
+
+            contextMenuStrip1.Opening += delegate (object sender, CancelEventArgs e)
+            {
+                runAtStartupToolStripMenuItem.Checked = AutoRun.IsStartup(appName);
+            };
+
             // register the event that is fired after the key press.
             hook.KeyPressed +=
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
                         
-            tryRegisterHotKey(global::ModifierKeys.Control | global::ModifierKeys.Alt,
+            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
                 Keys.Left);
-            tryRegisterHotKey(global::ModifierKeys.Control | global::ModifierKeys.Alt,
+            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
                 Keys.Right);
-            tryRegisterHotKey(global::ModifierKeys.Control | global::ModifierKeys.Alt,
+            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
                 Keys.Up);
-            tryRegisterHotKey(global::ModifierKeys.Control | global::ModifierKeys.Alt,
+            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
                 Keys.Down);
 
             this.ShowInTaskbar = false;
 
         }
+
 
         void tryRegisterHotKey(ModifierKeys modifiers, Keys key)
         {
@@ -49,27 +80,42 @@ namespace RotateScreen
             }
         }
 
-        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        static Keys modifierToKey(ModifierKeys modifier, Keys ret = Keys.None)
         {
 
-            // show the keys pressed in a label.
-            // label1.Text = e.Modifier.ToString() + " + " + e.Key.ToString();
-            Console.WriteLine(e.Modifier.ToString() + " + " + e.Key.ToString());
-           switch(e.Key)
+            if (modifier.HasFlag(Native.ModifierKeys.Alt)) ret = ret | Keys.Alt;
+            if (modifier.HasFlag(Native.ModifierKeys.Control)) ret = ret | Keys.Control;
+            if (modifier.HasFlag(Native.ModifierKeys.Shift)) ret = ret | Keys.Shift; 
+            if (modifier.HasFlag(Native.ModifierKeys.Win)) ret = ret | Keys.LWin;
+            return ret;
+        }
+
+        static (ModifierKeys, Keys) keyToModifier(Keys key)
+        {
+            ModifierKeys modifiers = (ModifierKeys)0;
+            Keys retKey = key & Keys.KeyCode;
+
+            if (key.HasFlag(Keys.Alt)) modifiers = modifiers | Native.ModifierKeys.Alt;
+            if (key.HasFlag(Keys.Control)) modifiers = modifiers | Native.ModifierKeys.Control;
+            if (key.HasFlag(Keys.Shift)) modifiers = modifiers | Native.ModifierKeys.Shift;
+            if (key.HasFlag(Keys.LWin)) modifiers = modifiers | Native.ModifierKeys.Win;
+
+            return (modifiers, retKey);
+        }
+
+        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        {
+            foreach(ToolStripItem i in contextMenuStrip1.Items)
             {
-                case Keys.Left:
-                    Display.Rotate(1, Display.Orientations.DEGREES_CW_90);
-                    break;
-                case Keys.Right:
-                    Display.Rotate(1, Display.Orientations.DEGREES_CW_270);
-                    break;
-                case Keys.Down:
-                    Display.Rotate(1, Display.Orientations.DEGREES_CW_180);
-                    break;
-                case Keys.Up:
-                    Display.Rotate(1, Display.Orientations.DEGREES_CW_0);
-                    break;
-            }
+                if (i is ToolStripMenuItem item)
+                {
+                    var (modifiers, key) = keyToModifier(item.ShortcutKeys);
+                    if (modifiers == e.Modifier && key == e.Key)
+                    {
+                        item.PerformClick();
+                    }
+                }
+            }       
         }
 
         protected override void WndProc(ref Message m)
@@ -95,22 +141,10 @@ namespace RotateScreen
             TopMost = top;
         }
 
-        private void btnExit_Click(object sender, EventArgs e)
-        {
-            Application.Exit();
-        }
-
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
-
-        private void showToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Show();
-            hidden = false;
-        }
-
 
         private void rotateScreenIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
@@ -128,15 +162,6 @@ namespace RotateScreen
             }
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void RotateScreenForm_Load(object sender, EventArgs e)
-        {
-
-        }
 
         private void RotateScreenForm_Shown(object sender, EventArgs e)
         {
@@ -146,14 +171,12 @@ namespace RotateScreen
 
         }
 
-        private void addToStartupToolStripMenuItem_Click(object sender, EventArgs e)
+        private void RotateScreenForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            AutoRun.AddStartup("RotateScreen", Application.ExecutablePath);
-        }
-
-        private void removeFromStartupToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            AutoRun.RemoveStartup("RotaeScreen");
+            this.Hide();
+            hidden = true;
+            e.Cancel = true;            
+            rotateScreenIcon.ShowBalloonTip(3000, null, "Still run in background", ToolTipIcon.None);
         }
     }
 }
