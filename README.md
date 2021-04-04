@@ -14,3 +14,4 @@ Rotate your screen with `hotkeys`
 ## Todos
 - Rotate `active screen` instead of `main screen`
 - Allow changing hotkeys
+- Update Run At Startup to avoid run older version of the app
