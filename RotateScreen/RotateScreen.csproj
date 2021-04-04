@@ -49,10 +49,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoRun.cs" />
-    <Compile Include="Display.cs" />
-    <Compile Include="KeyboardHook.cs" />
-    <Compile Include="NativeMethods.cs" />
+    <Compile Include="Native\Startup.cs" />
+    <Compile Include="Native\Display.cs" />
+    <Compile Include="Native\KeyboardHook.cs" />
+    <Compile Include="Native\ShowMe.cs" />
     <Compile Include="RotateScreen.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -89,5 +89,6 @@
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Win32;
 
-namespace Native
+namespace RotateScreen.Native
 {
-    class AutoRun
+    class Startup
     {
         /// <summary>
         /// Add application to Startup of windows

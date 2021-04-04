@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace Native
+// ReSharper disable InconsistentNaming
+
+namespace RotateScreen.Native
 {
     public class Display
     {
@@ -23,13 +25,14 @@ namespace Native
             DEVMODE dm = new DEVMODE();
             d.cb = Marshal.SizeOf(d);
 
-            if (!NativeMethods.EnumDisplayDevices(null, DisplayNumber - 1, ref d, 0))
-                throw new ArgumentOutOfRangeException("DisplayNumber", DisplayNumber, "Number is greater than connected displays.");
+            if (!ShowMe.EnumDisplayDevices(null, DisplayNumber - 1, ref d, 0))
+                throw new ArgumentOutOfRangeException("DisplayNumber", DisplayNumber,
+                    "Number is greater than connected displays.");
 
-            if (0 != NativeMethods.EnumDisplaySettings(
-                d.DeviceName, NativeMethods.ENUM_CURRENT_SETTINGS, ref dm))
+            if (0 != ShowMe.EnumDisplaySettings(
+                d.DeviceName, ShowMe.ENUM_CURRENT_SETTINGS, ref dm))
             {
-                if ((dm.dmDisplayOrientation + (int)Orientation) % 2 == 1) // Need to swap height and width?
+                if ((dm.dmDisplayOrientation + (int) Orientation) % 2 == 1) // Need to swap height and width?
                 {
                     int temp = dm.dmPelsHeight;
                     dm.dmPelsHeight = dm.dmPelsWidth;
@@ -39,22 +42,22 @@ namespace Native
                 switch (Orientation)
                 {
                     case Orientations.DEGREES_CW_90:
-                        dm.dmDisplayOrientation = NativeMethods.DMDO_270;
+                        dm.dmDisplayOrientation = ShowMe.DMDO_270;
                         break;
                     case Orientations.DEGREES_CW_180:
-                        dm.dmDisplayOrientation = NativeMethods.DMDO_180;
+                        dm.dmDisplayOrientation = ShowMe.DMDO_180;
                         break;
                     case Orientations.DEGREES_CW_270:
-                        dm.dmDisplayOrientation = NativeMethods.DMDO_90;
+                        dm.dmDisplayOrientation = ShowMe.DMDO_90;
                         break;
                     case Orientations.DEGREES_CW_0:
-                        dm.dmDisplayOrientation = NativeMethods.DMDO_DEFAULT;
+                        dm.dmDisplayOrientation = ShowMe.DMDO_DEFAULT;
                         break;
                     default:
                         break;
                 }
 
-                DISP_CHANGE ret = NativeMethods.ChangeDisplaySettingsEx(
+                DISP_CHANGE ret = ShowMe.ChangeDisplaySettingsEx(
                     d.DeviceName, ref dm, IntPtr.Zero,
                     DisplaySettingsFlags.CDS_UPDATEREGISTRY, IntPtr.Zero);
 
@@ -81,7 +84,7 @@ namespace Native
         }
     }
 
-    internal partial class NativeMethods
+    internal partial class ShowMe
     {
         [DllImport("user32.dll")]
         internal static extern DISP_CHANGE ChangeDisplaySettingsEx(
@@ -103,7 +106,6 @@ namespace Native
         public const int DMDO_270 = 3;
 
         public const int ENUM_CURRENT_SETTINGS = -1;
-
     }
 
     // See: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183565(v=vs.85).aspx
@@ -113,69 +115,93 @@ namespace Native
         public const int CCHDEVICENAME = 32;
         public const int CCHFORMNAME = 32;
 
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)]
-        [System.Runtime.InteropServices.FieldOffset(0)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)] [System.Runtime.InteropServices.FieldOffset(0)]
         public string dmDeviceName;
+
         [System.Runtime.InteropServices.FieldOffset(32)]
         public Int16 dmSpecVersion;
+
         [System.Runtime.InteropServices.FieldOffset(34)]
         public Int16 dmDriverVersion;
+
         [System.Runtime.InteropServices.FieldOffset(36)]
         public Int16 dmSize;
+
         [System.Runtime.InteropServices.FieldOffset(38)]
         public Int16 dmDriverExtra;
+
         [System.Runtime.InteropServices.FieldOffset(40)]
         public DM dmFields;
 
         [System.Runtime.InteropServices.FieldOffset(44)]
         Int16 dmOrientation;
+
         [System.Runtime.InteropServices.FieldOffset(46)]
         Int16 dmPaperSize;
+
         [System.Runtime.InteropServices.FieldOffset(48)]
         Int16 dmPaperLength;
+
         [System.Runtime.InteropServices.FieldOffset(50)]
         Int16 dmPaperWidth;
+
         [System.Runtime.InteropServices.FieldOffset(52)]
         Int16 dmScale;
+
         [System.Runtime.InteropServices.FieldOffset(54)]
         Int16 dmCopies;
+
         [System.Runtime.InteropServices.FieldOffset(56)]
         Int16 dmDefaultSource;
+
         [System.Runtime.InteropServices.FieldOffset(58)]
         Int16 dmPrintQuality;
 
         [System.Runtime.InteropServices.FieldOffset(44)]
         public POINTL dmPosition;
+
         [System.Runtime.InteropServices.FieldOffset(52)]
         public Int32 dmDisplayOrientation;
+
         [System.Runtime.InteropServices.FieldOffset(56)]
         public Int32 dmDisplayFixedOutput;
 
         [System.Runtime.InteropServices.FieldOffset(60)]
         public short dmColor;
+
         [System.Runtime.InteropServices.FieldOffset(62)]
         public short dmDuplex;
+
         [System.Runtime.InteropServices.FieldOffset(64)]
         public short dmYResolution;
+
         [System.Runtime.InteropServices.FieldOffset(66)]
         public short dmTTOption;
+
         [System.Runtime.InteropServices.FieldOffset(68)]
         public short dmCollate;
-        [System.Runtime.InteropServices.FieldOffset(72)]
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
+
+        [System.Runtime.InteropServices.FieldOffset(72)] [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
         public string dmFormName;
+
         [System.Runtime.InteropServices.FieldOffset(102)]
         public Int16 dmLogPixels;
+
         [System.Runtime.InteropServices.FieldOffset(104)]
         public Int32 dmBitsPerPel;
+
         [System.Runtime.InteropServices.FieldOffset(108)]
         public Int32 dmPelsWidth;
+
         [System.Runtime.InteropServices.FieldOffset(112)]
         public Int32 dmPelsHeight;
+
         [System.Runtime.InteropServices.FieldOffset(116)]
         public Int32 dmDisplayFlags;
+
         [System.Runtime.InteropServices.FieldOffset(116)]
         public Int32 dmNup;
+
         [System.Runtime.InteropServices.FieldOffset(120)]
         public Int32 dmDisplayFrequency;
     }
@@ -184,16 +210,19 @@ namespace Native
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
     internal struct DISPLAY_DEVICE
     {
-        [MarshalAs(UnmanagedType.U4)]
-        public int cb;
+        [MarshalAs(UnmanagedType.U4)] public int cb;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
         public string DeviceName;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string DeviceString;
-        [MarshalAs(UnmanagedType.U4)]
-        public DisplayDeviceStateFlags StateFlags;
+
+        [MarshalAs(UnmanagedType.U4)] public DisplayDeviceStateFlags StateFlags;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string DeviceID;
+
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
         public string DeviceKey;
     }
@@ -225,14 +254,19 @@ namespace Native
         /// <summary>The device is part of the desktop.</summary>
         AttachedToDesktop = 0x1,
         MultiDriver = 0x2,
+
         /// <summary>The device is part of the desktop.</summary>
         PrimaryDevice = 0x4,
+
         /// <summary>Represents a pseudo device used to mirror application drawing for remoting or other purposes.</summary>
         MirroringDriver = 0x8,
+
         /// <summary>The device is VGA compatible.</summary>
         VGACompatible = 0x10,
+
         /// <summary>The device is removable; it cannot be the primary display.</summary>
         Removable = 0x20,
+
         /// <summary>The device has more display modes than its output devices support.</summary>
         ModesPruned = 0x8000000,
         Remote = 0x4000000,

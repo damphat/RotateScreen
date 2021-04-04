@@ -1,4 +1,4 @@
-﻿using Native;
+﻿using RotateScreen.Native;
 using System;
 using System.Threading;
 using System.Windows.Forms;
@@ -7,7 +7,6 @@ namespace RotateScreen
 {
     static class Program
     {
-        
         [STAThread]
         static void Main()
         {
@@ -24,9 +23,9 @@ namespace RotateScreen
             {
                 // send our Win32 message to make the currently running instance
                 // jump on top of all the other windows
-                NativeMethods.PostMessage(
-                    (IntPtr)NativeMethods.HWND_BROADCAST,
-                    NativeMethods.WM_SHOWME,
+                ShowMe.PostMessage(
+                    (IntPtr) ShowMe.HWND_BROADCAST,
+                    ShowMe.WM_SHOWME,
                     IntPtr.Zero,
                     IntPtr.Zero);
             }

@@ -1,4 +1,4 @@
-﻿using Native;
+﻿using RotateScreen.Native;
 using System;
 using System.ComponentModel;
 using System.Windows.Forms;
@@ -16,59 +16,56 @@ namespace RotateScreen
         {
             InitializeComponent();
 
-            rotate0ToolStripMenuItem.Click += delegate(object sender, EventArgs args) {
+            rotate0ToolStripMenuItem.Click += delegate(object sender, EventArgs args)
+            {
                 Display.Rotate(1, Display.Orientations.DEGREES_CW_0);
             };
 
-            rotate90ToolStripMenuItem.Click += delegate (object sender, EventArgs args) {
+            rotate90ToolStripMenuItem.Click += delegate(object sender, EventArgs args)
+            {
                 Display.Rotate(1, Display.Orientations.DEGREES_CW_90);
             };
 
 
-            rotate180ToolStripMenuItem.Click += delegate (object sender, EventArgs args) {
+            rotate180ToolStripMenuItem.Click += delegate(object sender, EventArgs args)
+            {
                 Display.Rotate(1, Display.Orientations.DEGREES_CW_180);
             };
 
-            rotate270ToolStripMenuItem.Click += delegate (object sender, EventArgs args) {
+            rotate270ToolStripMenuItem.Click += delegate(object sender, EventArgs args)
+            {
                 Display.Rotate(1, Display.Orientations.DEGREES_CW_270);
             };
 
 
-            runAtStartupToolStripMenuItem.Click += delegate (object sender, EventArgs e)
+            runAtStartupToolStripMenuItem.Click += delegate(object sender, EventArgs e)
             {
-                if(AutoRun.IsStartup(appName))
+                if (Startup.IsStartup(appName))
                 {
-                    AutoRun.RemoveStartup(appName);
-                } else
+                    Startup.RemoveStartup(appName);
+                }
+                else
                 {
-                    AutoRun.AddStartup(appName, Application.ExecutablePath);
+                    Startup.AddStartup(appName, Application.ExecutablePath);
                 }
             };
 
-            contextMenuStrip1.Opening += delegate (object sender, CancelEventArgs e)
+            contextMenuStrip1.Opening += delegate(object sender, CancelEventArgs e)
             {
-                runAtStartupToolStripMenuItem.Checked = AutoRun.IsStartup(appName);
+                runAtStartupToolStripMenuItem.Checked = Startup.IsStartup(appName);
             };
 
             // register the event that is fired after the key press.
             hook.KeyPressed +=
                 new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
-                        
-            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
-                Keys.Left);
-            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
-                Keys.Right);
-            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
-                Keys.Up);
-            tryRegisterHotKey(Native.ModifierKeys.Control | Native.ModifierKeys.Alt,
-                Keys.Down);
+
+            RegisterGlobalHotKeys();
 
             this.ShowInTaskbar = false;
-
         }
 
 
-        void tryRegisterHotKey(ModifierKeys modifiers, Keys key)
+        void TryRegisterHotKey(ModifierKeys modifiers, Keys key)
         {
             try
             {
@@ -76,54 +73,61 @@ namespace RotateScreen
             }
             catch (Exception)
             {
-                MessageBox.Show($"Can not register {modifiers} + {key}, is it already registered by other application?");
+                MessageBox.Show(
+                    $"Can not register {modifiers} + {key}, is it already registered by other application?");
             }
         }
 
-        static Keys modifierToKey(ModifierKeys modifier, Keys ret = Keys.None)
+        static (ModifierKeys, Keys) KeyToModifier(Keys key)
         {
-
-            if (modifier.HasFlag(Native.ModifierKeys.Alt)) ret = ret | Keys.Alt;
-            if (modifier.HasFlag(Native.ModifierKeys.Control)) ret = ret | Keys.Control;
-            if (modifier.HasFlag(Native.ModifierKeys.Shift)) ret = ret | Keys.Shift; 
-            if (modifier.HasFlag(Native.ModifierKeys.Win)) ret = ret | Keys.LWin;
-            return ret;
-        }
-
-        static (ModifierKeys, Keys) keyToModifier(Keys key)
-        {
-            ModifierKeys modifiers = (ModifierKeys)0;
-            Keys retKey = key & Keys.KeyCode;
+            ModifierKeys modifiers = 0;
+            var retKey = key & Keys.KeyCode;
 
             if (key.HasFlag(Keys.Alt)) modifiers = modifiers | Native.ModifierKeys.Alt;
             if (key.HasFlag(Keys.Control)) modifiers = modifiers | Native.ModifierKeys.Control;
             if (key.HasFlag(Keys.Shift)) modifiers = modifiers | Native.ModifierKeys.Shift;
-            if (key.HasFlag(Keys.LWin)) modifiers = modifiers | Native.ModifierKeys.Win;
+
+            //if (key.HasFlag(Keys.????)) modifiers = modifiers | Native.ModifierKeys.Win;
 
             return (modifiers, retKey);
         }
 
-        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        void RegisterGlobalHotKeys()
         {
-            foreach(ToolStripItem i in contextMenuStrip1.Items)
+            foreach (ToolStripItem i in contextMenuStrip1.Items)
             {
                 if (i is ToolStripMenuItem item)
                 {
-                    var (modifiers, key) = keyToModifier(item.ShortcutKeys);
+                    if (item.ShortcutKeys == Keys.None) continue;
+
+                    var (modifiers, key) = KeyToModifier(item.ShortcutKeys);
+                    TryRegisterHotKey(modifiers, key);
+                }
+            }
+        }
+
+        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        {
+            foreach (ToolStripItem i in contextMenuStrip1.Items)
+            {
+                if (i is ToolStripMenuItem item)
+                {
+                    var (modifiers, key) = KeyToModifier(item.ShortcutKeys);
                     if (modifiers == e.Modifier && key == e.Key)
                     {
                         item.PerformClick();
                     }
                 }
-            }       
+            }
         }
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == NativeMethods.WM_SHOWME)
+            if (m.Msg == Native.ShowMe.WM_SHOWME)
             {
                 ShowMe();
             }
+
             base.WndProc(ref m);
         }
 
@@ -133,6 +137,7 @@ namespace RotateScreen
             {
                 WindowState = FormWindowState.Normal;
             }
+
             // get our current "TopMost" value (ours will always be false though)
             bool top = TopMost;
             // make our form jump to the top of everything
@@ -168,14 +173,13 @@ namespace RotateScreen
             //this.WindowState = FormWindowState.Minimized;
             this.Hide();
             hidden = true;
-
         }
 
         private void RotateScreenForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             this.Hide();
             hidden = true;
-            e.Cancel = true;            
+            e.Cancel = true;
             rotateScreenIcon.ShowBalloonTip(3000, null, "Still run in background", ToolTipIcon.None);
         }
     }
