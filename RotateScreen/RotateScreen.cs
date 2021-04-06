@@ -7,10 +7,12 @@ namespace RotateScreen
 {
     public partial class RotateScreenForm : Form
     {
-        public static String appName = "RotateScreen";
-        KeyboardHook hook = new KeyboardHook();
+        public static string AppName = "RotateScreen";
+        public static StartupEntry StartupEntry = new StartupEntry(AppName);
+        private readonly KeyboardHook _hook = new KeyboardHook();
 
-        private bool hidden = false;
+        private bool _hidden = false;
+        private bool _exit = false;
 
         public RotateScreenForm()
         {
@@ -40,24 +42,16 @@ namespace RotateScreen
 
             runAtStartupToolStripMenuItem.Click += delegate(object sender, EventArgs e)
             {
-                if (Startup.IsStartup(appName))
-                {
-                    Startup.RemoveStartup(appName);
-                }
-                else
-                {
-                    Startup.AddStartup(appName, Application.ExecutablePath);
-                }
+                var current = StartupEntry.Value;
+                StartupEntry.Value = current== null ? Application.ExecutablePath : null;
             };
 
-            contextMenuStrip1.Opening += delegate(object sender, CancelEventArgs e)
-            {
-                runAtStartupToolStripMenuItem.Checked = Startup.IsStartup(appName);
-            };
+            contextMenuStrip1.Opening +=
+                delegate { runAtStartupToolStripMenuItem.Checked = StartupEntry.Value != null; };
 
             // register the event that is fired after the key press.
-            hook.KeyPressed +=
-                new EventHandler<KeyPressedEventArgs>(hook_KeyPressed);
+            _hook.KeyPressed +=
+                hook_KeyPressed;
 
             RegisterGlobalHotKeys();
 
@@ -69,23 +63,24 @@ namespace RotateScreen
         {
             try
             {
-                hook.RegisterHotKey(modifiers, key);
+                _hook.RegisterHotKey(modifiers, key);
             }
             catch (Exception)
             {
                 MessageBox.Show(
-                    $"Can not register {modifiers} + {key}, is it already registered by other application?");
+                    $@"Can not register {modifiers} + {key}, is it already registered by other application?");
             }
         }
+        
 
         static (ModifierKeys, Keys) KeyToModifier(Keys key)
         {
             ModifierKeys modifiers = 0;
             var retKey = key & Keys.KeyCode;
 
-            if (key.HasFlag(Keys.Alt)) modifiers = modifiers | Native.ModifierKeys.Alt;
-            if (key.HasFlag(Keys.Control)) modifiers = modifiers | Native.ModifierKeys.Control;
-            if (key.HasFlag(Keys.Shift)) modifiers = modifiers | Native.ModifierKeys.Shift;
+            if (key.HasFlag(Keys.Alt)) modifiers |= Native.ModifierKeys.Alt;
+            if (key.HasFlag(Keys.Control)) modifiers |= Native.ModifierKeys.Control;
+            if (key.HasFlag(Keys.Shift)) modifiers |= Native.ModifierKeys.Shift;
 
             //if (key.HasFlag(Keys.????)) modifiers = modifiers | Native.ModifierKeys.Win;
 
@@ -106,7 +101,7 @@ namespace RotateScreen
             }
         }
 
-        void hook_KeyPressed(object sender, KeyPressedEventArgs e)
+        private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
             foreach (ToolStripItem i in contextMenuStrip1.Items)
             {
@@ -148,22 +143,23 @@ namespace RotateScreen
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            _exit = true;
             Application.Exit();
         }
 
         private void rotateScreenIcon_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            if (hidden) // this.WindowState == FormWindowState.Minimized)
+            if (_hidden) // this.WindowState == FormWindowState.Minimized)
             {
                 // this.WindowState = FormWindowState.Normal;
                 this.Show();
-                hidden = false;
+                _hidden = false;
             }
             else
             {
                 // this.WindowState = FormWindowState.Minimized;
                 this.Hide();
-                hidden = true;
+                _hidden = true;
             }
         }
 
@@ -172,15 +168,27 @@ namespace RotateScreen
         {
             //this.WindowState = FormWindowState.Minimized;
             this.Hide();
-            hidden = true;
+            _hidden = true;
         }
 
         private void RotateScreenForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            this.Hide();
-            hidden = true;
-            e.Cancel = true;
-            rotateScreenIcon.ShowBalloonTip(3000, null, "Still run in background", ToolTipIcon.None);
+            if (!_exit)
+            {
+                this.Hide();
+                _hidden = true;
+                e.Cancel = true;
+                rotateScreenIcon.ShowBalloonTip(3000, null, "Still run in background", ToolTipIcon.None);
+            }
+        }
+
+        private void RotateScreenForm_Load(object sender, EventArgs e)
+        {
+            if (StartupEntry.Value != null && StartupEntry.Value != Application.ExecutablePath)
+            {
+                MessageBox.Show($"Current exe: {Application.ExecutablePath}\n\nStartupEntry: {StartupEntry.Value}",
+                    @"Multiple exe detected!");
+            }
         }
     }
 }

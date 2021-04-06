@@ -5,12 +5,12 @@ using System.Windows.Forms;
 
 namespace RotateScreen
 {
-    static class Program
+    internal static class Program
     {
         [STAThread]
-        static void Main()
+        private static void Main()
         {
-            Mutex mutex = new Mutex(true, "RotateScreen");
+            var mutex = new Mutex(true, "RotateScreen");
 
             if (mutex.WaitOne(TimeSpan.Zero, true))
             {

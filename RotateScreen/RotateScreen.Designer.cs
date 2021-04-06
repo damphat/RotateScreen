@@ -108,7 +108,7 @@ namespace RotateScreen
             // 
             this.runAtStartupToolStripMenuItem.Name = "runAtStartupToolStripMenuItem";
             this.runAtStartupToolStripMenuItem.Size = new System.Drawing.Size(222, 22);
-            this.runAtStartupToolStripMenuItem.Text = "Run at Startup";
+            this.runAtStartupToolStripMenuItem.Text = "Run at StartupEntry";
             // 
             // toolStripMenuItem4
             // 
@@ -143,6 +143,7 @@ namespace RotateScreen
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Rotate Screen";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.RotateScreenForm_FormClosing);
+            this.Load += new System.EventHandler(this.RotateScreenForm_Load);
             this.Shown += new System.EventHandler(this.RotateScreenForm_Shown);
             this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);

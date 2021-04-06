@@ -26,7 +26,7 @@ namespace RotateScreen.Native
             public Window()
             {
                 // create the handle for the window.
-                this.CreateHandle(new CreateParams());
+                CreateHandle(new CreateParams());
             }
 
             /// <summary>
@@ -41,8 +41,8 @@ namespace RotateScreen.Native
                 if (m.Msg == WM_HOTKEY)
                 {
                     // get the keys.
-                    Keys key = (Keys) (((int) m.LParam >> 16) & 0xFFFF);
-                    ModifierKeys modifier = (ModifierKeys) ((int) m.LParam & 0xFFFF);
+                    var key = (Keys) (((int) m.LParam >> 16) & 0xFFFF);
+                    var modifier = (ModifierKeys) ((int) m.LParam & 0xFFFF);
 
                     // invoke the event to notify the parent.
                     KeyPressed?.Invoke(this, new KeyPressedEventArgs(modifier, key));
@@ -55,7 +55,7 @@ namespace RotateScreen.Native
 
             public void Dispose()
             {
-                this.DestroyHandle();
+                DestroyHandle();
             }
 
             #endregion
@@ -95,10 +95,7 @@ namespace RotateScreen.Native
         public void Dispose()
         {
             // unregister all the registered hot keys.
-            for (var i = _currentId; i > 0; i--)
-            {
-                UnregisterHotKey(_window.Handle, i);
-            }
+            for (var i = _currentId; i > 0; i--) UnregisterHotKey(_window.Handle, i);
 
             // dispose the inner native window.
             _window.Dispose();

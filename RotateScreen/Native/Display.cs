@@ -20,9 +20,9 @@ namespace RotateScreen.Native
             if (DisplayNumber == 0)
                 throw new ArgumentOutOfRangeException("DisplayNumber", DisplayNumber, "First display is 1.");
 
-            bool result = false;
-            DISPLAY_DEVICE d = new DISPLAY_DEVICE();
-            DEVMODE dm = new DEVMODE();
+            var result = false;
+            var d = new DISPLAY_DEVICE();
+            var dm = new DEVMODE();
             d.cb = Marshal.SizeOf(d);
 
             if (!ShowMe.EnumDisplayDevices(null, DisplayNumber - 1, ref d, 0))
@@ -34,7 +34,7 @@ namespace RotateScreen.Native
             {
                 if ((dm.dmDisplayOrientation + (int) Orientation) % 2 == 1) // Need to swap height and width?
                 {
-                    int temp = dm.dmPelsHeight;
+                    var temp = dm.dmPelsHeight;
                     dm.dmPelsHeight = dm.dmPelsWidth;
                     dm.dmPelsWidth = temp;
                 }
@@ -57,7 +57,7 @@ namespace RotateScreen.Native
                         break;
                 }
 
-                DISP_CHANGE ret = ShowMe.ChangeDisplaySettingsEx(
+                var ret = ShowMe.ChangeDisplaySettingsEx(
                     d.DeviceName, ref dm, IntPtr.Zero,
                     DisplaySettingsFlags.CDS_UPDATEREGISTRY, IntPtr.Zero);
 
@@ -72,10 +72,7 @@ namespace RotateScreen.Native
             try
             {
                 uint i = 0;
-                while (++i <= 64)
-                {
-                    Rotate(i, Orientations.DEGREES_CW_0);
-                }
+                while (++i <= 64) Rotate(i, Orientations.DEGREES_CW_0);
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -115,95 +112,67 @@ namespace RotateScreen.Native
         public const int CCHDEVICENAME = 32;
         public const int CCHFORMNAME = 32;
 
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)] [System.Runtime.InteropServices.FieldOffset(0)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHDEVICENAME)] [FieldOffset(0)]
         public string dmDeviceName;
 
-        [System.Runtime.InteropServices.FieldOffset(32)]
-        public Int16 dmSpecVersion;
+        [FieldOffset(32)] public short dmSpecVersion;
 
-        [System.Runtime.InteropServices.FieldOffset(34)]
-        public Int16 dmDriverVersion;
+        [FieldOffset(34)] public short dmDriverVersion;
 
-        [System.Runtime.InteropServices.FieldOffset(36)]
-        public Int16 dmSize;
+        [FieldOffset(36)] public short dmSize;
 
-        [System.Runtime.InteropServices.FieldOffset(38)]
-        public Int16 dmDriverExtra;
+        [FieldOffset(38)] public short dmDriverExtra;
 
-        [System.Runtime.InteropServices.FieldOffset(40)]
-        public DM dmFields;
+        [FieldOffset(40)] public DM dmFields;
 
-        [System.Runtime.InteropServices.FieldOffset(44)]
-        Int16 dmOrientation;
+        [FieldOffset(44)] private short dmOrientation;
 
-        [System.Runtime.InteropServices.FieldOffset(46)]
-        Int16 dmPaperSize;
+        [FieldOffset(46)] private short dmPaperSize;
 
-        [System.Runtime.InteropServices.FieldOffset(48)]
-        Int16 dmPaperLength;
+        [FieldOffset(48)] private short dmPaperLength;
 
-        [System.Runtime.InteropServices.FieldOffset(50)]
-        Int16 dmPaperWidth;
+        [FieldOffset(50)] private short dmPaperWidth;
 
-        [System.Runtime.InteropServices.FieldOffset(52)]
-        Int16 dmScale;
+        [FieldOffset(52)] private short dmScale;
 
-        [System.Runtime.InteropServices.FieldOffset(54)]
-        Int16 dmCopies;
+        [FieldOffset(54)] private short dmCopies;
 
-        [System.Runtime.InteropServices.FieldOffset(56)]
-        Int16 dmDefaultSource;
+        [FieldOffset(56)] private short dmDefaultSource;
 
-        [System.Runtime.InteropServices.FieldOffset(58)]
-        Int16 dmPrintQuality;
+        [FieldOffset(58)] private short dmPrintQuality;
 
-        [System.Runtime.InteropServices.FieldOffset(44)]
-        public POINTL dmPosition;
+        [FieldOffset(44)] public POINTL dmPosition;
 
-        [System.Runtime.InteropServices.FieldOffset(52)]
-        public Int32 dmDisplayOrientation;
+        [FieldOffset(52)] public int dmDisplayOrientation;
 
-        [System.Runtime.InteropServices.FieldOffset(56)]
-        public Int32 dmDisplayFixedOutput;
+        [FieldOffset(56)] public int dmDisplayFixedOutput;
 
-        [System.Runtime.InteropServices.FieldOffset(60)]
-        public short dmColor;
+        [FieldOffset(60)] public short dmColor;
 
-        [System.Runtime.InteropServices.FieldOffset(62)]
-        public short dmDuplex;
+        [FieldOffset(62)] public short dmDuplex;
 
-        [System.Runtime.InteropServices.FieldOffset(64)]
-        public short dmYResolution;
+        [FieldOffset(64)] public short dmYResolution;
 
-        [System.Runtime.InteropServices.FieldOffset(66)]
-        public short dmTTOption;
+        [FieldOffset(66)] public short dmTTOption;
 
-        [System.Runtime.InteropServices.FieldOffset(68)]
-        public short dmCollate;
+        [FieldOffset(68)] public short dmCollate;
 
-        [System.Runtime.InteropServices.FieldOffset(72)] [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
+        [FieldOffset(72)] [MarshalAs(UnmanagedType.ByValTStr, SizeConst = CCHFORMNAME)]
         public string dmFormName;
 
-        [System.Runtime.InteropServices.FieldOffset(102)]
-        public Int16 dmLogPixels;
+        [FieldOffset(102)] public short dmLogPixels;
 
-        [System.Runtime.InteropServices.FieldOffset(104)]
-        public Int32 dmBitsPerPel;
+        [FieldOffset(104)] public int dmBitsPerPel;
 
-        [System.Runtime.InteropServices.FieldOffset(108)]
-        public Int32 dmPelsWidth;
+        [FieldOffset(108)] public int dmPelsWidth;
 
-        [System.Runtime.InteropServices.FieldOffset(112)]
-        public Int32 dmPelsHeight;
+        [FieldOffset(112)] public int dmPelsHeight;
 
-        [System.Runtime.InteropServices.FieldOffset(116)]
-        public Int32 dmDisplayFlags;
+        [FieldOffset(116)] public int dmDisplayFlags;
 
-        [System.Runtime.InteropServices.FieldOffset(116)]
-        public Int32 dmNup;
+        [FieldOffset(116)] public int dmNup;
 
-        [System.Runtime.InteropServices.FieldOffset(120)]
-        public Int32 dmDisplayFrequency;
+        [FieldOffset(120)] public int dmDisplayFrequency;
     }
 
     // See: https://msdn.microsoft.com/en-us/library/windows/desktop/dd183569(v=vs.85).aspx
@@ -231,8 +200,8 @@ namespace RotateScreen.Native
     [StructLayout(LayoutKind.Sequential)]
     internal struct POINTL
     {
-        long x;
-        long y;
+        private long x;
+        private long y;
     }
 
     internal enum DISP_CHANGE : int
