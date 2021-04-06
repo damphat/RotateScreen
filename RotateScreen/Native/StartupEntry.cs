@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace RotateScreen.Native
 {
@@ -15,6 +14,7 @@ namespace RotateScreen.Native
     {
         private const string RegPath = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run";
         public readonly string Name;
+
         public StartupEntry(string name)
         {
             Name = name;

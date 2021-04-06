@@ -43,7 +43,7 @@ namespace RotateScreen
             runAtStartupToolStripMenuItem.Click += delegate(object sender, EventArgs e)
             {
                 var current = StartupEntry.Value;
-                StartupEntry.Value = current== null ? Application.ExecutablePath : null;
+                StartupEntry.Value = current == null ? Application.ExecutablePath : null;
             };
 
             contextMenuStrip1.Opening +=
@@ -55,11 +55,11 @@ namespace RotateScreen
 
             RegisterGlobalHotKeys();
 
-            this.ShowInTaskbar = false;
+            ShowInTaskbar = false;
         }
 
 
-        void TryRegisterHotKey(ModifierKeys modifiers, Keys key)
+        private void TryRegisterHotKey(ModifierKeys modifiers, Keys key)
         {
             try
             {
@@ -71,9 +71,9 @@ namespace RotateScreen
                     $@"Can not register {modifiers} + {key}, is it already registered by other application?");
             }
         }
-        
 
-        static (ModifierKeys, Keys) KeyToModifier(Keys key)
+
+        private static (ModifierKeys, Keys) KeyToModifier(Keys key)
         {
             ModifierKeys modifiers = 0;
             var retKey = key & Keys.KeyCode;
@@ -87,10 +87,9 @@ namespace RotateScreen
             return (modifiers, retKey);
         }
 
-        void RegisterGlobalHotKeys()
+        private void RegisterGlobalHotKeys()
         {
             foreach (ToolStripItem i in contextMenuStrip1.Items)
-            {
                 if (i is ToolStripMenuItem item)
                 {
                     if (item.ShortcutKeys == Keys.None) continue;
@@ -98,43 +97,31 @@ namespace RotateScreen
                     var (modifiers, key) = KeyToModifier(item.ShortcutKeys);
                     TryRegisterHotKey(modifiers, key);
                 }
-            }
         }
 
         private void hook_KeyPressed(object sender, KeyPressedEventArgs e)
         {
             foreach (ToolStripItem i in contextMenuStrip1.Items)
-            {
                 if (i is ToolStripMenuItem item)
                 {
                     var (modifiers, key) = KeyToModifier(item.ShortcutKeys);
-                    if (modifiers == e.Modifier && key == e.Key)
-                    {
-                        item.PerformClick();
-                    }
+                    if (modifiers == e.Modifier && key == e.Key) item.PerformClick();
                 }
-            }
         }
 
         protected override void WndProc(ref Message m)
         {
-            if (m.Msg == Native.ShowMe.WM_SHOWME)
-            {
-                ShowMe();
-            }
+            if (m.Msg == Native.ShowMe.WM_SHOWME) ShowMe();
 
             base.WndProc(ref m);
         }
 
         private void ShowMe()
         {
-            if (WindowState == FormWindowState.Minimized)
-            {
-                WindowState = FormWindowState.Normal;
-            }
+            if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
 
             // get our current "TopMost" value (ours will always be false though)
-            bool top = TopMost;
+            var top = TopMost;
             // make our form jump to the top of everything
             TopMost = true;
             // set it back to whatever it was
@@ -152,13 +139,13 @@ namespace RotateScreen
             if (_hidden) // this.WindowState == FormWindowState.Minimized)
             {
                 // this.WindowState = FormWindowState.Normal;
-                this.Show();
+                Show();
                 _hidden = false;
             }
             else
             {
                 // this.WindowState = FormWindowState.Minimized;
-                this.Hide();
+                Hide();
                 _hidden = true;
             }
         }
@@ -167,7 +154,7 @@ namespace RotateScreen
         private void RotateScreenForm_Shown(object sender, EventArgs e)
         {
             //this.WindowState = FormWindowState.Minimized;
-            this.Hide();
+            Hide();
             _hidden = true;
         }
 
@@ -175,7 +162,7 @@ namespace RotateScreen
         {
             if (!_exit)
             {
-                this.Hide();
+                Hide();
                 _hidden = true;
                 e.Cancel = true;
                 rotateScreenIcon.ShowBalloonTip(3000, null, "Still run in background", ToolTipIcon.None);
@@ -185,10 +172,8 @@ namespace RotateScreen
         private void RotateScreenForm_Load(object sender, EventArgs e)
         {
             if (StartupEntry.Value != null && StartupEntry.Value != Application.ExecutablePath)
-            {
                 MessageBox.Show($"Current exe: {Application.ExecutablePath}\n\nStartupEntry: {StartupEntry.Value}",
                     @"Multiple exe detected!");
-            }
         }
     }
 }
